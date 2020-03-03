@@ -31,6 +31,8 @@
     border-style: solid;
     border-color: black;
     height: 80vh;
+    overflow: scroll;
+    list-style-type: none;
 }
 
 /* Online Users */
