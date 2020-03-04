@@ -35,7 +35,7 @@ $(document).ready(function () {
 
     // On new message
     socket.on('chat message', function (msg) {
-        let timestamp = msg["timestamp"];
+        let timestamp = getTimeString(msg["timestamp"]);
         let username = msg["username"];
         let message = msg["message"];
 
@@ -45,9 +45,24 @@ $(document).ready(function () {
 
     // On a user joining
     socket.on('online', function (msg) {
+        // Populate user list upon join
         $('#user-content').empty();
-        for (let i = 0; i < msg.length; i++) {
-            $('#user-content').append($('<li>').text(msg[i]));
+        let onlineUsers = msg.OnlineUsers;
+        for (let i = 0; i < onlineUsers.length; i++) {
+            $('#user-content').append($('<li>').text(onlineUsers[i]));
+        }
+
+        // Populate chat content upon join
+        $('#chat-content').empty();
+        let allMessages = msg.AllMessages;
+        for (let i = 0; i < allMessages.length; i++) {
+            let theMessage = allMessages[i];
+            let timestamp = getTimeString(theMessage["timestamp"]);
+            let username = theMessage["username"];
+            let message = theMessage["message"];
+
+            let full_message = timestamp + " " + username + ": " + message;
+            $('#chat-content').append($('<li>').text(full_message));
         }
     });
 });
@@ -58,4 +73,19 @@ function getUserData()
     xmlHttp.open( "GET", nicknameRequest, false );
     xmlHttp.send( null );
     return xmlHttp.responseText;
+}
+
+function getTimeString(dateObject)
+{
+    let ts = new Date(dateObject);
+    let h = ts.getHours();
+    if (h.toString().length < 2){
+        h = "0" + h;
+    }
+    let m = ts.getMinutes();
+    if (m.toString().length < 2){
+        m = "0" + m;
+    }
+
+    return h + ":" + m;
 }

@@ -11,6 +11,7 @@ const TIME_TO_LIVE = 360000;
 // User in-memory DB. Contains user_num: nickname
 let users = {};
 let onlineUsers = [];
+let messageList = [];
 
 app.use(cookieParser());
 app.use(express.static('chat-frontend'));
@@ -47,10 +48,15 @@ app.get("/logout", function (req, res) {
     res.send('user has logged out');
 });
 
+app.get("/messagelist", function (req, res) {
+    res.send(messageList);
+});
+
 // Socket logic
 io.on('connection', function (socket) {
     socket.on('chat message', function (msg) {
-        msg.timestamp = getTime();
+        msg.timestamp = new Date();
+        messageList.push(msg);
         io.emit('chat message', msg);
     });
 
@@ -59,7 +65,7 @@ io.on('connection', function (socket) {
         if (onlineUsers.includes(msg) === false) {
             onlineUsers.push(msg);
         }
-        io.emit('online', onlineUsers);
+        io.emit('online', {"OnlineUsers": onlineUsers, "AllMessages": messageList});
     });
 
     //Delete user on disconnect
@@ -84,13 +90,4 @@ function generateCookie() {
     users[random_number] = nickname;
 
     return cookie_content;
-}
-
-function getTime()
-{
-    let today = new Date();
-    let h = today.getHours();
-    let m = today.getMinutes();
-
-    return h + ":" + m;
 }
