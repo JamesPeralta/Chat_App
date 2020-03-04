@@ -10,7 +10,6 @@ const TIME_TO_LIVE = 360000;
 
 // User in-memory DB. Contains user_num: nickname
 let users = {};
-let userCount = 0;
 
 app.use(cookieParser());
 app.use(express.static('chat-frontend'));
@@ -38,7 +37,7 @@ app.get('/chat', function (req, res) {
 
 app.get("/getuser", function (req, res) {
     let userNum = req.cookies.userData["user_num"];
-    res.send("You are " + users[userNum] + ".");
+    res.send(users[userNum]);
 });
 
 app.get("/logout", function (req, res) {
@@ -71,17 +70,15 @@ function userExists(user_id) {
 function generateCookie() {
     console.log("issuing a new cookie");
     // Generate cookie:
-    let nickname = "User" + userCount;
+    let random_number = Math.floor((Math.random() * 100000) + 1);
+    let nickname = "User" + random_number;
     let cookie_content = {
-        user_num: userCount,
+        user_num: random_number,
         nick_name: nickname
     };
 
     // Store user with nickname information
-    users[userCount] = nickname;
-
-    // Increment user numbers
-    userCount++;
+    users[random_number] = nickname;
 
     return cookie_content;
 }
