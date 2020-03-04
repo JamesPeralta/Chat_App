@@ -52,9 +52,6 @@
     overflow-y:scroll;
 }
 
-/*cha ul{height:200px; width:18%;}*/
-nav ul{overflow:hidden; overflow-y:scroll;}
-
 /* Online Users */
 #online-users-component {
 
@@ -65,9 +62,25 @@ nav ul{overflow:hidden; overflow-y:scroll;}
 }
 
 #user-display {
+    display: flex;
     border-style: solid;
     border-color: black;
     height: 80vh;
+    overflow: auto;
+    list-style-type: none;
+}
+
+#user-div {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+#user-content {
+    list-style-type: none;
+    width: 100%;
+    overflow:hidden;
+    overflow-y:scroll;
 }
 
 /* Input box */

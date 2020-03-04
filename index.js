@@ -10,6 +10,7 @@ const TIME_TO_LIVE = 360000;
 
 // User in-memory DB. Contains user_num: nickname
 let users = {};
+let onlineUsers = [];
 
 app.use(cookieParser());
 app.use(express.static('chat-frontend'));
@@ -52,6 +53,16 @@ io.on('connection', function (socket) {
         msg.timestamp = getTime();
         io.emit('chat message', msg);
     });
+
+    socket.on('online', function (msg) {
+        console.log(msg + " connected");
+        if (onlineUsers.includes(msg) === false) {
+            onlineUsers.push(msg);
+        }
+        io.emit('online', onlineUsers);
+    });
+
+    //Delete user on disconnect
 });
 
 http.listen(3000, function () {
