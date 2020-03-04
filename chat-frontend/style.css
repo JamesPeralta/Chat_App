@@ -16,6 +16,7 @@
 .row {
     margin-top: 5px;
     margin-bottom: 5px;
+    flex-wrap: nowrap;
 }
 
 /* Chat Screen CSS */
@@ -28,12 +29,31 @@
 }
 
 #chat-display {
+    display: flex;
     border-style: solid;
     border-color: black;
     height: 80vh;
-    overflow: scroll;
+    overflow: auto;
     list-style-type: none;
 }
+
+#chat-div {
+    display: flex;
+    /*align-items: flex-end;*/
+    height: 100%;
+    width: 100%;
+}
+
+#chat-content {
+    list-style-type: none;
+    /*height: 100%;*/
+    width: 100%;
+    overflow:hidden;
+    overflow-y:scroll;
+}
+
+/*cha ul{height:200px; width:18%;}*/
+nav ul{overflow:hidden; overflow-y:scroll;}
 
 /* Online Users */
 #online-users-component {
