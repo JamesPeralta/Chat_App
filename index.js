@@ -32,6 +32,7 @@ app.get('/chat', function (req, res) {
         let cookie_content = generateCookie();
         res.cookie(COOKIE_NAME, cookie_content, {maxAge:TIME_TO_LIVE});
     }
+
     res.sendFile(__dirname + '/chat-frontend/index.html');
 });
 
@@ -48,6 +49,7 @@ app.get("/logout", function (req, res) {
 // Socket logic
 io.on('connection', function (socket) {
     socket.on('chat message', function (msg) {
+        msg.timestamp = getTime();
         io.emit('chat message', msg);
     });
 });
@@ -57,16 +59,6 @@ http.listen(3000, function () {
 });
 
 // Helper functions
-
-function userExists(user_id) {
-    if (user_id in users) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
 function generateCookie() {
     console.log("issuing a new cookie");
     // Generate cookie:
@@ -81,4 +73,13 @@ function generateCookie() {
     users[random_number] = nickname;
 
     return cookie_content;
+}
+
+function getTime()
+{
+    let today = new Date();
+    let h = today.getHours();
+    let m = today.getMinutes();
+
+    return h + ":" + m;
 }

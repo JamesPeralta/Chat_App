@@ -5,13 +5,12 @@ let userName = null;
 $(document).ready(function () {
     // Fix user name
     userName = getUserData();
-    $('#current-user').text(userName);
+    $('#current-user').text("You are " + userName + ".");
 
     // Add send button event handler
     $('#send-button').click(function (e) {
         e.preventDefault();
-        message_content = {
-            timestamp: getTime(),
+        let message_content = {
             username: userName,
             message: $('#msg-text').val()
         };
@@ -28,19 +27,10 @@ $(document).ready(function () {
     });
 });
 
-function getTime()
-{
-    let today = new Date();
-    let h = today.getHours();
-    let m = today.getMinutes();
-
-    return h + ":" + m;
-}
-
 function getUserData()
 {
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", nicknameRequest, false ); // false for synchronous request
+    xmlHttp.open( "GET", nicknameRequest, false );
     xmlHttp.send( null );
     return xmlHttp.responseText;
 }
