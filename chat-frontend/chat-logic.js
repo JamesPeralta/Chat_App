@@ -20,7 +20,6 @@ $(document).ready(function () {
     // My Info upon every restart
     socket.on('myInfo', function (msg) {
         userData = msg;
-        console.log("HERE");
         setUserName();
     });
 
@@ -87,8 +86,10 @@ function refreshMessageList(allMessages) {
         let color = users[theMessage["uid"]]["color"];
         let messageUID = theMessage["uid"];
 
+        console.log(userData["uid"]);
+        console.log(messageUID);
         let full_message = timestamp + ` <span style="color: ${color}">` + username + '</span>: ' + message;
-        if (userData["uid"] === messageUID){
+        if (userData["uid"] == messageUID){
             full_message = "<b>" + full_message + "</b>";
         }
         $('#chat-content').append($('<li class="text-break">' + full_message + '</li>'));
