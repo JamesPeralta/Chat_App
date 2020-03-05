@@ -39,7 +39,8 @@
 
 #chat-div {
     display: flex;
-    /*align-items: flex-end;*/
+    flex-direction: row-reverse;
+    /*class="d-flex flex-column-reverse"*/
     height: 100%;
     width: 100%;
 }
@@ -50,10 +51,8 @@
     width: 100%;
     overflow:hidden;
     overflow-y:scroll;
-}
-
-#chat-content span {
-    color: darkblue;
+    padding-left: 12px;
+    margin-bottom: 10px;
 }
 
 /* Online Users */
@@ -85,6 +84,8 @@
     width: 100%;
     overflow:hidden;
     overflow-y:scroll;
+    padding-left: 12px;
+    margin-bottom: 10px;
 }
 
 /* Input box */

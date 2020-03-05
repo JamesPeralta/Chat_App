@@ -23,10 +23,24 @@ io.on('connection', function (socket) {
     let user;
 
     socket.on('chat message', function (msg) {
-        msg.uid = user;
-        msg.timestamp = new Date();
-        messageList.push(msg);
-        io.emit("newMessage", messageList);
+        // emit new nickname list
+        if (msg.message.search(new RegExp("^/nick")) !== -1)
+        {
+            // Update user list
+            // Update message list
+
+            // send these updates
+            io.emit("updateOnlineList", users);
+            io.emit("newMessage", messageList);
+        }
+        // Regular message
+        else
+        {
+            msg.uid = user;
+            msg.timestamp = new Date();
+            messageList.push(msg);
+            io.emit("newMessage", messageList);
+        }
     });
 
     socket.on('online', function (msg) {
@@ -38,7 +52,7 @@ io.on('connection', function (socket) {
             users[cookie_UID] = {
                 uid: cookie_UID,
                 name: "User" + cookie_UID,
-                color: "Red",
+                color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
                 online: true
             };
 
@@ -78,4 +92,9 @@ function generateCookie() {
     };
 
     return cookie_content;
+}
+
+function randomColor() {
+
+
 }

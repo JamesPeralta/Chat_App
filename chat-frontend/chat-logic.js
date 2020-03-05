@@ -6,7 +6,6 @@ const COOKIE = "uid";
 const NICKNAME = "name";
 
 $(document).ready(function () {
-
     let uidCookie = getCookie("uid");
     socket.emit('online', uidCookie);
 
@@ -82,10 +81,11 @@ function refreshMessageList(allMessages) {
         let timestamp = getTimeString(theMessage["timestamp"]);
         let username = users[theMessage["uid"]]["name"];
         let message = theMessage["message"];
+        let color = users[theMessage["uid"]]["color"];
 
         // TODO: Define if it's my message or not to bold
-        let full_message = timestamp + ' <span>' + username + '</span>: ' + message;
-        $('#chat-content').append($('<li>' + full_message + '</li>'));
+        let full_message = timestamp + ` <span style="color: ${color}">` + username + '</span>: ' + message;
+        $('#chat-content').append($('<li class="text-break">' + full_message + '</li>'));
     }
 }
 
