@@ -1,39 +1,43 @@
 let socket = io();
-let idRequest = "http://localhost:3000/getID";
-let userDataRequest = "http://localhost:3000/getData";
-let userID = null;
 let userData = null;
+let users = null;
+
+const COOKIE = "uid";
+const NICKNAME = "name";
 
 $(document).ready(function () {
-    // Fix user name
-    userID = getUserID();
-    userData = getUserData();
 
-    // Temporary clear
-    clearCookies();
+    let uidCookie = getCookie("uid");
+    socket.emit('online', uidCookie);
 
-    console.log(userData);
-    $('#current-user').text("You are " + userData["nickname"] + ".");
+    // Whenever the server sends me a new cookie I replace mine
+    socket.on('newCookie', function (msg) {
+        setCookie(COOKIE, msg[COOKIE], 1);
+        userData = msg;
+        setUserName();
+    });
 
-    // Inform server what user you are
-    socket.emit('online', userID);
+    // My Info upon every restart
+    socket.on('myInfo', function (msg) {
+        userData = msg;
+        setUserName();
+    });
 
-    // Add send button event handler
-    $('#send-button').click(function (e) {
-        e.preventDefault();
-        let message_content = {
-            username: userData["nickname"],
-            message: $('#msg-text').val()
-        };
-        $('#msg-text').val("");
-        socket.emit('chat message', message_content);
+    // Everytime online list updates
+    socket.on("updateOnlineList", function (msg) {
+        users = msg;
+        refreshOnlineList(msg);
+    });
+
+    // Everytime online list updates
+    socket.on("newMessage", function (msg) {
+        refreshMessageList(msg);
     });
 
     // Add enter handler
     $("#msg-text").on('keyup', function (e) {
-        if (e.keyCode === 13) {
+        if (e.key === "Enter") {
             let message_content = {
-                username: userData["nickname"],
                 message: $('#msg-text').val()
             };
             $('#msg-text').val("");
@@ -41,55 +45,19 @@ $(document).ready(function () {
         }
     });
 
-    // On new message
-    socket.on('chat message', function (msg) {
-        let timestamp = getTimeString(msg["timestamp"]);
-        let username = msg["username"];
-        let message = msg["message"];
-
-        let full_message = timestamp + ' <span>' + username + '</span>: ' + message;
-        $('#chat-content').append($('<li>' + full_message + '</li>'));
-    });
-
-    // On a user joining
-    socket.on('online', function (msg) {
-        let onlineUsers = msg.OnlineUsers;
-        refreshOnlineList(onlineUsers);
-
-        let allMessages = msg.AllMessages;
-        refreshMessageList(allMessages);
-    });
-
-    // On nickname change
-    socket.on('nicknameChange', function (msg) {
-        let onlineUsers = msg.OnlineUsers;
-        refreshOnlineList(onlineUsers);
+    // Add send button event handler
+    $('#send-button').click(function (e) {
+        e.preventDefault();
+        let message_content = {
+            message: $('#msg-text').val()
+        };
+        $('#msg-text').val("");
+        socket.emit('chat message', message_content);
     });
 });
 
-function clearCookies()
-{
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", "http://localhost:3000/logout", false );
-    xmlHttp.send( null );
-}
-
-function getUserID()
-{
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", idRequest, false );
-    xmlHttp.send( null );
-    let response = JSON.parse(xmlHttp.responseText);
-    return response["user_id"];
-}
-
-function getUserData()
-{
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", userDataRequest, false );
-    xmlHttp.send( null );
-    let response = JSON.parse(xmlHttp.responseText);
-    return response["user_data"];
+function setUserName() {
+    $('#current-user').text("You are " + userData[NICKNAME] + ".");
 }
 
 function getTimeString(dateObject)
@@ -112,7 +80,7 @@ function refreshMessageList(allMessages) {
     for (let i = 0; i < allMessages.length; i++) {
         let theMessage = allMessages[i];
         let timestamp = getTimeString(theMessage["timestamp"]);
-        let username = theMessage["username"];
+        let username = users[theMessage["uid"]]["name"];
         let message = theMessage["message"];
 
         // TODO: Define if it's my message or not to bold
@@ -123,7 +91,36 @@ function refreshMessageList(allMessages) {
 
 function refreshOnlineList(onlineUsers) {
     $('#user-content').empty();
-    for (let i = 0; i < onlineUsers.length; i++) {
-        $('#user-content').append($('<li>').text(onlineUsers[i]));
+    const values = Object.values(onlineUsers);
+    for (let i = 0; i < values.length; i++) {
+        let nickname = values[i]["name"];
+        let status = values[i]["online"];
+        if (status === true)
+        {
+            $('#user-content').append($('<li>').text(nickname));
+        }
     }
+}
+
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for(let i = 0; i <ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
