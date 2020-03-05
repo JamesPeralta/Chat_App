@@ -1,13 +1,14 @@
 let socket = io();
 let userData = null;
 let users = null;
+let myID = null;
 
 const COOKIE = "uid";
 const NICKNAME = "name";
 
 $(document).ready(function () {
-    let uidCookie = getCookie("uid");
-    socket.emit('online', uidCookie);
+    let myID = getCookie("uid");
+    socket.emit('online', myID);
 
     // Whenever the server sends me a new cookie I replace mine
     socket.on('newCookie', function (msg) {
@@ -19,6 +20,7 @@ $(document).ready(function () {
     // My Info upon every restart
     socket.on('myInfo', function (msg) {
         userData = msg;
+        console.log("HERE");
         setUserName();
     });
 
@@ -26,6 +28,7 @@ $(document).ready(function () {
     socket.on("updateOnlineList", function (msg) {
         users = msg;
         refreshOnlineList(msg);
+        setUserName();
     });
 
     // Everytime online list updates
@@ -82,11 +85,17 @@ function refreshMessageList(allMessages) {
         let username = users[theMessage["uid"]]["name"];
         let message = theMessage["message"];
         let color = users[theMessage["uid"]]["color"];
+        let messageUID = theMessage["uid"];
 
-        // TODO: Define if it's my message or not to bold
         let full_message = timestamp + ` <span style="color: ${color}">` + username + '</span>: ' + message;
+        if (userData["uid"] === messageUID){
+            full_message = "<b>" + full_message + "</b>";
+        }
         $('#chat-content').append($('<li class="text-break">' + full_message + '</li>'));
     }
+
+    let objDiv = document.getElementById("chat-content");
+    objDiv.scrollTop = objDiv.scrollHeight;
 }
 
 function refreshOnlineList(onlineUsers) {

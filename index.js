@@ -26,10 +26,16 @@ io.on('connection', function (socket) {
         // emit new nickname list
         if (msg.message.search(new RegExp("^/nick")) !== -1)
         {
-            // Update user list
-            // Update message list
+            let str = msg.message;
 
-            // send these updates
+            // Get new nickname
+            let res = str.split("/nick")[1];
+            res = res.replace(/(\r\n|\n|\r)/gm,"");
+            res = res.replace(/^\s+|\s+$/g, '');
+
+            users[user].name = res;
+
+            socket.emit('myInfo', users[user]);
             io.emit("updateOnlineList", users);
             io.emit("newMessage", messageList);
         }

@@ -55,6 +55,10 @@
     margin-bottom: 10px;
 }
 
+#current-user {
+    /*overflow: hidden;*/
+}
+
 /* Online Users */
 #online-users-component {
 
