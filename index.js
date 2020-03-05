@@ -24,16 +24,29 @@ io.on('connection', function (socket) {
 
     socket.on('chat message', function (msg) {
         // emit new nickname list
-        if (msg.message.search(new RegExp("^/nick")) !== -1)
+        if (msg.message.search(new RegExp("^/nickcolor")) !== -1)
         {
             let str = msg.message;
 
             // Get new nickname
-            let res = str.split("/nick")[1];
-            res = res.replace(/(\r\n|\n|\r)/gm,"");
-            res = res.replace(/^\s+|\s+$/g, '');
+            let newColor = str.split("/nickcolor")[1];
+            newColor = newColor.replace(/(\r\n|\n|\r)/gm,"");
+            newColor = newColor.replace(/^\s+|\s+$/g, '');
+            users[user].color = "#" + newColor;
 
-            users[user].name = res;
+            socket.emit('myInfo', users[user]);
+            io.emit("updateOnlineList", users);
+            io.emit("newMessage", messageList);
+        }
+        else if (msg.message.search(new RegExp("^/nick")) !== -1)
+        {
+            let str = msg.message;
+
+            // Get new nickname
+            let newName = str.split("/nick")[1];
+            newName = newName.replace(/(\r\n|\n|\r)/gm,"");
+            newName = newName.replace(/^\s+|\s+$/g, '');
+            users[user].name = newName;
 
             socket.emit('myInfo', users[user]);
             io.emit("updateOnlineList", users);
