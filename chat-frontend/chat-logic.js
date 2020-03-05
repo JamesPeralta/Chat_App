@@ -1,20 +1,28 @@
 let socket = io();
-let nicknameRequest = "http://localhost:3000/getuser";
-let userName = null;
+let idRequest = "http://localhost:3000/getID";
+let userDataRequest = "http://localhost:3000/getData";
+let userID = null;
+let userData = null;
 
 $(document).ready(function () {
     // Fix user name
-    userName = getUserData();
-    $('#current-user').text("You are " + userName + ".");
+    userID = getUserID();
+    userData = getUserData();
+
+    // Temporary clear
+    clearCookies();
+
+    console.log(userData);
+    $('#current-user').text("You are " + userData["nickname"] + ".");
 
     // Inform server what user you are
-    socket.emit('online', userName);
+    socket.emit('online', userID);
 
     // Add send button event handler
     $('#send-button').click(function (e) {
         e.preventDefault();
         let message_content = {
-            username: userName,
+            username: userData["nickname"],
             message: $('#msg-text').val()
         };
         $('#msg-text').val("");
@@ -25,7 +33,7 @@ $(document).ready(function () {
     $("#msg-text").on('keyup', function (e) {
         if (e.keyCode === 13) {
             let message_content = {
-                username: userName,
+                username: userData["nickname"],
                 message: $('#msg-text').val()
             };
             $('#msg-text').val("");
@@ -39,40 +47,49 @@ $(document).ready(function () {
         let username = msg["username"];
         let message = msg["message"];
 
-        let full_message = timestamp + " " + username + ": " + message;
-        $('#chat-content').append($('<li>').text(full_message));
+        let full_message = timestamp + ' <span>' + username + '</span>: ' + message;
+        $('#chat-content').append($('<li>' + full_message + '</li>'));
     });
 
     // On a user joining
     socket.on('online', function (msg) {
-        // Populate user list upon join
-        $('#user-content').empty();
         let onlineUsers = msg.OnlineUsers;
-        for (let i = 0; i < onlineUsers.length; i++) {
-            $('#user-content').append($('<li>').text(onlineUsers[i]));
-        }
+        refreshOnlineList(onlineUsers);
 
-        // Populate chat content upon join
-        $('#chat-content').empty();
         let allMessages = msg.AllMessages;
-        for (let i = 0; i < allMessages.length; i++) {
-            let theMessage = allMessages[i];
-            let timestamp = getTimeString(theMessage["timestamp"]);
-            let username = theMessage["username"];
-            let message = theMessage["message"];
+        refreshMessageList(allMessages);
+    });
 
-            let full_message = timestamp + " " + username + ": " + message;
-            $('#chat-content').append($('<li>').text(full_message));
-        }
+    // On nickname change
+    socket.on('nicknameChange', function (msg) {
+        let onlineUsers = msg.OnlineUsers;
+        refreshOnlineList(onlineUsers);
     });
 });
+
+function clearCookies()
+{
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", "http://localhost:3000/logout", false );
+    xmlHttp.send( null );
+}
+
+function getUserID()
+{
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", idRequest, false );
+    xmlHttp.send( null );
+    let response = JSON.parse(xmlHttp.responseText);
+    return response["user_id"];
+}
 
 function getUserData()
 {
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", nicknameRequest, false );
+    xmlHttp.open( "GET", userDataRequest, false );
     xmlHttp.send( null );
-    return xmlHttp.responseText;
+    let response = JSON.parse(xmlHttp.responseText);
+    return response["user_data"];
 }
 
 function getTimeString(dateObject)
@@ -88,4 +105,25 @@ function getTimeString(dateObject)
     }
 
     return h + ":" + m;
+}
+
+function refreshMessageList(allMessages) {
+    $('#chat-content').empty();
+    for (let i = 0; i < allMessages.length; i++) {
+        let theMessage = allMessages[i];
+        let timestamp = getTimeString(theMessage["timestamp"]);
+        let username = theMessage["username"];
+        let message = theMessage["message"];
+
+        // TODO: Define if it's my message or not to bold
+        let full_message = timestamp + ' <span>' + username + '</span>: ' + message;
+        $('#chat-content').append($('<li>' + full_message + '</li>'));
+    }
+}
+
+function refreshOnlineList(onlineUsers) {
+    $('#user-content').empty();
+    for (let i = 0; i < onlineUsers.length; i++) {
+        $('#user-content').append($('<li>').text(onlineUsers[i]));
+    }
 }
