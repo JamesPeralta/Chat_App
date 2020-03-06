@@ -88,7 +88,7 @@ function refreshMessageList(allMessages) {
 
         let full_message = timestamp + ` <span style="color: ${color}">` + username + '</span>: ' + message;
         if (userData["uid"] == messageUID){
-            full_message = "<b>" + full_message + "</b>";
+            full_message = "<b><i>" + full_message + "</i></b>";
         }
         $('#chat-content').append($('<li class="text-break">' + full_message + '</li>'));
     }
