@@ -86,8 +86,6 @@ function refreshMessageList(allMessages) {
         let color = users[theMessage["uid"]]["color"];
         let messageUID = theMessage["uid"];
 
-        console.log(userData["uid"]);
-        console.log(messageUID);
         let full_message = timestamp + ` <span style="color: ${color}">` + username + '</span>: ' + message;
         if (userData["uid"] == messageUID){
             full_message = "<b>" + full_message + "</b>";
@@ -103,11 +101,12 @@ function refreshOnlineList(onlineUsers) {
     $('#user-content').empty();
     const values = Object.values(onlineUsers);
     for (let i = 0; i < values.length; i++) {
+        let color = values[i]["color"];
         let nickname = values[i]["name"];
         let status = values[i]["online"];
         if (status === true)
         {
-            $('#user-content').append($('<li>').text(nickname));
+            $('#user-content').append($(`<li class="text-break" style="color: ${color}">` + nickname + "</li>"));
         }
     }
 }

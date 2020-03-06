@@ -112,8 +112,3 @@ function generateCookie() {
 
     return cookie_content;
 }
-
-function randomColor() {
-
-
-}
