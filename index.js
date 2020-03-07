@@ -24,7 +24,7 @@ io.on('connection', function (socket) {
 
     socket.on('chat message', function (msg) {
         // emit new nickname list
-        if (msg.message.search(new RegExp("^/nickcolor")) !== -1)
+        if (msg.message.search(new RegExp('^/nickcolor ')) !== -1)
         {
             let str = msg.message;
 
@@ -34,11 +34,15 @@ io.on('connection', function (socket) {
             newColor = newColor.replace(/^\s+|\s+$/g, '');
             users[user].color = "#" + newColor;
 
+            socket.emit('serverMessage', {
+                pos: messageList.length,
+                message: `Nickname Color successfully changed to ${"#" + newColor}.`
+            });
             socket.emit('myInfo', users[user]);
             io.emit("updateOnlineList", users);
             io.emit("newMessage", messageList);
         }
-        else if (msg.message.search(new RegExp("^/nick")) !== -1)
+        else if (msg.message.search(new RegExp('^/nick ')) !== -1)
         {
             let str = msg.message;
 
@@ -79,6 +83,16 @@ io.on('connection', function (socket) {
 
             socket.emit('myInfo', users[user]);
             io.emit("updateOnlineList", users);
+            io.emit("newMessage", messageList);
+        }
+        // Invalid command catch
+        else if (msg.message.search(new RegExp('^/')) !== -1)
+        {
+            console.log("Here");
+            socket.emit('serverMessage', {
+                pos: messageList.length,
+                message: 'Invalid Command.'
+            });
             io.emit("newMessage", messageList);
         }
         // Regular message
