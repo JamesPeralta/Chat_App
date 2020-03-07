@@ -2,9 +2,11 @@ let socket = io();
 let userData = null;
 let users = null;
 let myID = null;
+let serverMessages = []; // Contains messages and positions
 
 const COOKIE = "uid";
 const NICKNAME = "name";
+const SERVERID = "0.0.0.0";
 
 $(document).ready(function () {
     let myID = getCookie("uid");
@@ -33,6 +35,16 @@ $(document).ready(function () {
     // Everytime online list updates
     socket.on("newMessage", function (msg) {
         refreshMessageList(msg);
+    });
+
+    // Everytime online list updates
+    socket.on("serverMessage", function (msg) {
+        let serverLength = serverMessages.length;
+        serverMessages.push({
+            uid: SERVERID,
+            pos: msg["pos"] + serverLength,
+            message: msg["message"]
+        });
     });
 
     // Add enter handler
@@ -77,20 +89,34 @@ function getTimeString(dateObject)
 }
 
 function refreshMessageList(allMessages) {
+    for (let i = 0; i < serverMessages.length; i++) {
+        allMessages.splice(serverMessages[i]["pos"], 0, serverMessages[i]);
+    }
     $('#chat-content').empty();
+    // Splice server messages into the array
     for (let i = 0; i < allMessages.length; i++) {
         let theMessage = allMessages[i];
-        let timestamp = getTimeString(theMessage["timestamp"]);
-        let username = users[theMessage["uid"]]["name"];
-        let message = theMessage["message"];
-        let color = users[theMessage["uid"]]["color"];
-        let messageUID = theMessage["uid"];
 
-        let full_message = timestamp + ` <span style="color: ${color}">` + username + '</span>: ' + message;
-        if (userData["uid"] == messageUID){
-            full_message = "<b><i>" + full_message + "</i></b>";
+        let messageUserID = theMessage["uid"];
+
+        if (messageUserID == SERVERID)
+        {
+            $('#chat-content').append($('<li class="text-break">' + theMessage["message"] + '</li>'));
         }
-        $('#chat-content').append($('<li class="text-break">' + full_message + '</li>'));
+        else
+        {
+            let timestamp = getTimeString(theMessage["timestamp"]);
+            let username = users[theMessage["uid"]]["name"];
+            let message = theMessage["message"];
+            let color = users[theMessage["uid"]]["color"];
+            let messageUID = theMessage["uid"];
+
+            let full_message = timestamp + ` <span style="color: ${color}">` + username + '</span>: ' + message;
+            if (userData["uid"] == messageUID){
+                full_message = "<b><i>" + full_message + "</i></b>";
+            }
+            $('#chat-content').append($('<li class="text-break">' + full_message + '</li>'));
+        }
     }
 
     let objDiv = document.getElementById("chat-content");

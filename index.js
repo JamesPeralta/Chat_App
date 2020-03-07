@@ -46,7 +46,36 @@ io.on('connection', function (socket) {
             let newName = str.split("/nick")[1];
             newName = newName.replace(/(\r\n|\n|\r)/gm,"");
             newName = newName.replace(/^\s+|\s+$/g, '');
-            users[user].name = newName;
+
+            let foundName = false;
+            let userKeys = Object.keys(users);
+            for (let i = 0; i < userKeys.length; i++)
+            {
+                // If I am not looking at my own user entry
+                if (users[userKeys[i]]["uid"] != user)
+                {
+                    // If thier name is the same as mine
+                    if (newName == users[userKeys[i]]["name"] && users[userKeys[i]]["online"])
+                    {
+                        // Change name back to default cookie UID and inform them
+                        socket.emit('serverMessage', {
+                            pos: messageList.length,
+                            message: `Somebody already goes by the name ${newName}.`
+                        });
+                        foundName = true;
+                        break;
+                    }
+                }
+            }
+
+            if (foundName === false)
+            {
+                users[user].name = newName;
+                socket.emit('serverMessage', {
+                    pos: messageList.length,
+                    message: `Nickname successfully changed to ${newName}.`
+                });
+            }
 
             socket.emit('myInfo', users[user]);
             io.emit("updateOnlineList", users);
@@ -78,8 +107,38 @@ io.on('connection', function (socket) {
             user = cookie_UID;
 
             socket.emit('newCookie', users[cookie_UID]);
+            socket.emit('serverMessage', {
+                pos: messageList.length,
+                message: `You are ${users[cookie_UID]["name"]}.`
+            });
         }
         else {
+            // Check if there username has been taken in the mean time
+            let myName = users[msg]["name"];
+            let userKeys = Object.keys(users);
+            for (let i = 0; i < userKeys.length; i++)
+            {
+                // If I am not looking at my own user entry
+                if (users[userKeys[i]]["uid"] != msg)
+                {
+                    // If thier name is the same as mine
+                    if (myName == users[userKeys[i]]["name"])
+                    {
+                        // Change name back to default cookie UID and inform them
+                        socket.emit('serverMessage', {
+                            pos: messageList.length,
+                            message: `Your old nickname (${users[msg]["name"]}) has been taken.`
+                        });
+                        users[msg]["name"] = "User" + msg;
+                        break;
+                    }
+                }
+            }
+
+            socket.emit('serverMessage', {
+                pos: messageList.length,
+                message: `You are ${users[msg]["name"]}.`
+            });
             user = msg;
 
             users[user]["online"] = true;
