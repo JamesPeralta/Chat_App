@@ -1,3 +1,7 @@
+// James Peralta
+// 30010233
+// Lab B02
+
 let socket = io();
 let userData = null;
 let users = null;
