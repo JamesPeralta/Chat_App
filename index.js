@@ -24,7 +24,7 @@ io.on('connection', function (socket) {
 
     socket.on('chat message', function (msg) {
         // emit new nickname list
-        if (msg.message.search(new RegExp('^/nickcolor ')) !== -1)
+        if (msg.message.search(new RegExp('^/nickcolor')) !== -1)
         {
             let str = msg.message;
 
@@ -32,12 +32,25 @@ io.on('connection', function (socket) {
             let newColor = str.split("/nickcolor")[1];
             newColor = newColor.replace(/(\r\n|\n|\r)/gm,"");
             newColor = newColor.replace(/^\s+|\s+$/g, '');
-            users[user].color = "#" + newColor;
 
-            socket.emit('serverMessage', {
-                pos: messageList.length,
-                message: `Nickname Color successfully changed to ${"#" + newColor}.`
-            });
+            let count = (newColor.match(new RegExp('[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]')) || []).length;
+            let stringLength = newColor.length % 6;
+            if (count === 1 && stringLength === 0)
+            {
+                users[user].color = "#" + newColor;
+
+                socket.emit('serverMessage', {
+                    pos: messageList.length,
+                    message: `Nickname Color successfully changed to ${"#" + newColor}.`
+                });
+            }
+            else
+            {
+                socket.emit('serverMessage', {
+                    pos: messageList.length,
+                    message: `Invalid Nickname Color ${"#" + newColor}.`
+                });
+            }
             socket.emit('myInfo', users[user]);
             io.emit("updateOnlineList", users);
             io.emit("newMessage", messageList);
@@ -47,7 +60,7 @@ io.on('connection', function (socket) {
             let str = msg.message;
 
             // Get new nickname
-            let newName = str.split("/nick")[1];
+            let newName = str.split("/nick ")[1];
             newName = newName.replace(/(\r\n|\n|\r)/gm,"");
             newName = newName.replace(/^\s+|\s+$/g, '');
 
@@ -88,7 +101,6 @@ io.on('connection', function (socket) {
         // Invalid command catch
         else if (msg.message.search(new RegExp('^/')) !== -1)
         {
-            console.log("Here");
             socket.emit('serverMessage', {
                 pos: messageList.length,
                 message: 'Invalid Command.'
